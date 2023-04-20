@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/andre-ols/chatservice/internal/domain/entity"
-	"github.com/andre-ols/chatservice/internal/domain/gateway"
 	"github.com/andre-ols/chatservice/internal/infra/db"
 )
 
@@ -16,38 +16,46 @@ type ChatRepositoryMySQL struct {
 }
 
 func (c *ChatRepositoryMySQL) CreateChat(ctx context.Context, chat *entity.Chat) error {
-	err := c.Queries.CreateChat(ctx, db.CreateChatParams{
-		ID:               chat.ID,
-		UserID:           chat.UserID,
-		InitialMessageID: chat.InitialSystemMessage.ID,
-		Status:           string(chat.Status),
-		TokenUsage:       int32(chat.TokenUsage),
-		Model:            chat.Config.Model.Name,
-		ModelMaxTokens:   int32(chat.Config.Model.MaxTokens),
-		Temperature:      float64(chat.Config.Temperature),
-		TopP:             float64(chat.Config.TopP),
-		N:                int32(chat.Config.N),
-		Stop:             chat.Config.Stop[0],
-		MaxTokens:        int32(chat.Config.MaxTokens),
-		PresencePenalty:  float64(chat.Config.PresencePenalty),
-		FrequencyPenalty: float64(chat.Config.FrequencyPenalty),
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
-	})
 
+	err := c.Queries.CreateChat(
+		ctx,
+		db.CreateChatParams{
+			ID:               chat.ID,
+			UserID:           chat.UserID,
+			InitialMessageID: chat.InitialSystemMessage.Content,
+			Status:           string(chat.Status),
+			TokenUsage:       int32(chat.TokenUsage),
+			Model:            chat.Config.Model.Name,
+			ModelMaxTokens:   int32(chat.Config.Model.MaxTokens),
+			Temperature:      float64(chat.Config.Temperature),
+			TopP:             float64(chat.Config.TopP),
+			N:                int32(chat.Config.N),
+			Stop:             chat.Config.Stop[0],
+			MaxTokens:        int32(chat.Config.MaxTokens),
+			PresencePenalty:  float64(chat.Config.PresencePenalty),
+			FrequencyPenalty: float64(chat.Config.FrequencyPenalty),
+			CreatedAt:        time.Now(),
+			UpdatedAt:        time.Now(),
+		},
+	)
 	if err != nil {
 		return err
 	}
 
-	err = c.Queries.AddMessage(ctx, db.AddMessageParams{
-		ID:        chat.InitialSystemMessage.ID,
-		ChatID:    chat.ID,
-		Content:   chat.InitialSystemMessage.Content,
-		Role:      string(chat.InitialSystemMessage.Role),
-		Tokens:    int32(chat.InitialSystemMessage.Tokens),
-		Model:     chat.InitialSystemMessage.Model.Name,
-		CreatedAt: chat.InitialSystemMessage.CreatedAt,
-	})
+	err = c.Queries.AddMessage(
+		ctx,
+		db.AddMessageParams{
+			ID:        chat.InitialSystemMessage.ID,
+			ChatID:    chat.ID,
+			Content:   chat.InitialSystemMessage.Content,
+			Role:      string(chat.InitialSystemMessage.Role),
+			Tokens:    int32(chat.InitialSystemMessage.Tokens),
+			CreatedAt: chat.InitialSystemMessage.CreatedAt,
+		},
+	)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -58,7 +66,7 @@ func (c *ChatRepositoryMySQL) FindChatByID(ctx context.Context, id string) (*ent
 	row, err := c.Queries.FindChatByID(ctx, id)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("chat not found")
 	}
 
 	chat.ID = row.ID
@@ -200,9 +208,9 @@ func (c *ChatRepositoryMySQL) SaveChat(ctx context.Context, chat *entity.Chat) e
 	return nil
 }
 
-func NewChatRepositoryMySQL(dbt *sql.DB) gateway.ChatGateway {
+func NewChatRepositoryMySQL(dbt *sql.DB) *ChatRepositoryMySQL {
 	return &ChatRepositoryMySQL{
 		DB:      dbt,
-		Queries: &db.Queries{},
+		Queries: db.New(dbt),
 	}
 }

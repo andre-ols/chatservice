@@ -37,11 +37,12 @@ type Chat struct {
 
 func NewChat(userID string, InitialSystemMessage *Message, config *ChatConfig) (*Chat, error) {
 	chat := &Chat{
-		ID:         uuid.New().String(),
-		UserID:     userID,
-		Status:     Active,
-		Config:     config,
-		TokenUsage: 0,
+		ID:                   uuid.New().String(),
+		UserID:               userID,
+		Status:               Active,
+		Config:               config,
+		InitialSystemMessage: InitialSystemMessage,
+		TokenUsage:           0,
 	}
 
 	if err := chat.AddMessage(InitialSystemMessage); err != nil {
