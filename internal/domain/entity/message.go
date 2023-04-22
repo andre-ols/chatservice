@@ -2,10 +2,12 @@ package entity
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
-	tiktoken_go "github.com/j178/tiktoken-go"
+	"github.com/pkoukk/tiktoken-go"
 )
 
 type Role string
@@ -27,7 +29,13 @@ type Message struct {
 
 func NewMessage(role Role, content string, model *Model) (*Message, error) {
 
-	totalTokens := tiktoken_go.CountTokens(model.GetName(), content)
+	totalTokens, err := CountTokens(model.Name, content)
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("totalTokens: ", totalTokens)
 
 	msg := &Message{
 		ID:        uuid.New().String(),
@@ -69,4 +77,21 @@ func (m *Message) Validate() error {
 
 func (m *Message) GetQuantityTokens() int {
 	return m.Tokens
+}
+
+func CountTokens(model string, text string) (int, error) {
+
+	tkm, err := tiktoken.EncodingForModel(model)
+	if err != nil {
+		err = fmt.Errorf("getEncoding: %v", err)
+		return 0, err
+	}
+
+	// encode
+	token := tkm.Encode(text, nil, nil)
+
+	// num_tokens
+	num_tokens := len(token)
+
+	return num_tokens, nil
 }
