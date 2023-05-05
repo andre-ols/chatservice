@@ -32,9 +32,7 @@ func NewMessage(role Role, content string, model *Model, tokenizer port.Tokenize
 		return nil, errors.New("model is nil")
 	}
 
-	totalTokens, err := tokenizer.CountTokens(model.Name, content)
-
-	if err != nil {
+	if err := model.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -42,9 +40,15 @@ func NewMessage(role Role, content string, model *Model, tokenizer port.Tokenize
 		ID:        uuid.New().String(),
 		Role:      role,
 		Content:   content,
-		Tokens:    totalTokens,
 		Model:     model,
+		Tokenizer: tokenizer,
 		CreatedAt: time.Now(),
+	}
+
+	err := msg.CountTokens()
+
+	if err != nil {
+		return nil, err
 	}
 
 	if err := msg.Validate(); err != nil {
@@ -69,10 +73,6 @@ func (m *Message) Validate() error {
 		return errors.New("content is empty")
 	}
 
-	if m.Model == nil {
-		return errors.New("model is nil")
-	}
-
 	if m.Tokens < 0 {
 		return errors.New("tokens is less than 0")
 	}
@@ -80,6 +80,31 @@ func (m *Message) Validate() error {
 	if m.CreatedAt.IsZero() {
 		return errors.New("created_at is empty")
 	}
+
+	if m.Model == nil {
+		return errors.New("model is nil")
+	}
+
+	if err := m.Model.Validate(); err != nil {
+		return err
+	}
+
+	if m.Tokenizer == nil {
+		return errors.New("tokenizer is nil")
+	}
+
+	return nil
+}
+
+func (m *Message) CountTokens() error {
+
+	totalTokens, err := m.Tokenizer.CountTokens(m.Model.Name, m.Content)
+
+	if err != nil {
+		return err
+	}
+
+	m.Tokens = totalTokens
 
 	return nil
 }

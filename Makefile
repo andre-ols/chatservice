@@ -13,4 +13,4 @@ grpc:
 unittest:
 	TEST_MODE=unit go test -v ./...
 
-.PHONY: migrate createmigration migratedown grpc unittest docker-run
+.PHONY: migrate createmigration migratedown grpc unittest 

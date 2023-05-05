@@ -65,6 +65,10 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 
 			// Save on database
 			err = uc.chatGateway.CreateChat(ctx, chat)
+
+			if err != nil {
+				return nil, errors.New("error saving new chat: " + err.Error())
+			}
 		} else {
 			return nil, errors.New("error fetching existing chat: " + err.Error())
 		}
@@ -123,12 +127,13 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 			return nil, errors.New("error receiving chat completion response: " + err.Error())
 		}
 
-		fullResponse.WriteString(response.Choices[0].Delta.Content)
+		content := response.Choices[0].Delta.Content
+		fullResponse.WriteString(content)
 
 		r := ChatCompletionOutputDto{
 			ChatID:  chat.ID,
 			UserID:  input.UserID,
-			Content: fullResponse.String(),
+			Content: content,
 		}
 
 		uc.Stream <- r
@@ -169,8 +174,7 @@ func (uc *ChatCompletionUseCase) createNewChat(ctx context.Context, input ChatCo
 		return nil, errors.New("error creating new model: " + err.Error())
 	}
 
-	chatConfig := &entity.ChatConfig{
-		Model:            model,
+	chatConfigInput := entity.ChatConfigInput{
 		Temperature:      input.Config.Temperature,
 		TopP:             input.Config.TopP,
 		N:                input.Config.N,
@@ -178,6 +182,13 @@ func (uc *ChatCompletionUseCase) createNewChat(ctx context.Context, input ChatCo
 		MaxTokens:        input.Config.MaxTokens,
 		PresencePenalty:  input.Config.PresencePenalty,
 		FrequencyPenalty: input.Config.FrequencyPenalty,
+		Model:            model,
+	}
+
+	chatConfig, err := entity.NewChatConfig(chatConfigInput)
+
+	if err != nil {
+		return nil, errors.New("error creating new chat config: " + err.Error())
 	}
 
 	tokenCounter := adapter.NewTokenCounter()

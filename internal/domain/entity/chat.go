@@ -13,36 +13,42 @@ const (
 	Ended  Status = "ended"
 )
 
-type ChatConfig struct {
-	Model            *Model
-	Temperature      float32  // 0.0 - 1.0
-	TopP             float32  // 0.0 - 1.0
-	N                int      // Number of tokens to generate
-	Stop             []string // Stop tokens
-	MaxTokens        int      // Max number of tokens to generate
-	PresencePenalty  float32  // -2.0 to 2.0 - Number beetwen -2.0 and 2.0
-	FrequencyPenalty float32  // -2.0 to 2.0 - Number beetwen -2.0 and 2.0
-}
-
 type Chat struct {
-	ID                   string
-	UserID               string
-	InitialSystemMessage *Message
-	Messages             []*Message
-	ErasedMessages       []*Message
-	Status               Status
-	TokenUsage           int
-	Config               *ChatConfig
+	ID                   string      `faker:"uuid_digit"`
+	UserID               string      `faker:"uuid_digit"`
+	InitialSystemMessage *Message    `faker:"-"`
+	Messages             []*Message  `faker:"-"`
+	ErasedMessages       []*Message  `faker:"-"`
+	Status               Status      `faker:"oneof: active,ended"`
+	TokenUsage           int         `faker:"boundary_start=0, boundary_end=100"`
+	Config               *ChatConfig `faker:"-"`
 }
 
 func NewChat(userID string, InitialSystemMessage *Message, config *ChatConfig) (*Chat, error) {
+
+	if InitialSystemMessage == nil {
+		return nil, errors.New("initial system message is nil")
+	}
+
+	if err := InitialSystemMessage.Validate(); err != nil {
+		return nil, err
+	}
+
+	if config == nil {
+		return nil, errors.New("config is nil")
+	}
+
+	if err := config.Validate(); err != nil {
+		return nil, err
+	}
+
 	chat := &Chat{
 		ID:                   uuid.New().String(),
 		UserID:               userID,
 		Status:               Active,
-		Config:               config,
 		InitialSystemMessage: InitialSystemMessage,
 		TokenUsage:           0,
+		Config:               config,
 	}
 
 	if err := chat.AddMessage(InitialSystemMessage); err != nil {
@@ -57,44 +63,43 @@ func NewChat(userID string, InitialSystemMessage *Message, config *ChatConfig) (
 }
 
 func (c *Chat) Validate() error {
-	if c.UserID == "" {
-		return errors.New("user_id is empty")
+
+	if c.ID == "" {
+		return errors.New("id is empty")
 	}
 
-	if c.Config == nil {
-		return errors.New("config is nil")
+	if c.UserID == "" {
+		return errors.New("user id is empty")
 	}
 
 	if c.Status != Active && c.Status != Ended {
 		return errors.New("invalid status")
 	}
 
-	if c.Config.Model == nil {
-		return errors.New("model is nil")
+	if c.TokenUsage < 0 {
+		return errors.New("invalid token usage")
 	}
 
-	if c.Config.Temperature < 0.0 || c.Config.Temperature > 1.0 {
-		return errors.New("invalid temperature")
+	if c.Messages == nil {
+		return errors.New("messages is nil")
 	}
 
-	if c.Config.TopP < 0.0 || c.Config.TopP > 1.0 {
-		return errors.New("invalid top_p")
+	// Validate InitialSystemMessage
+	if c.InitialSystemMessage == nil {
+		return errors.New("initial system message is nil")
 	}
 
-	if c.Config.N < 1 {
-		return errors.New("invalid n")
+	if err := c.InitialSystemMessage.Validate(); err != nil {
+		return err
 	}
 
-	if c.Config.MaxTokens < 1 {
-		return errors.New("invalid max_tokens")
+	// Validate Config
+	if c.Config == nil {
+		return errors.New("config is nil")
 	}
 
-	if c.Config.PresencePenalty < -2.0 || c.Config.PresencePenalty > 2.0 {
-		return errors.New("invalid presence_penalty")
-	}
-
-	if c.Config.FrequencyPenalty < -2.0 || c.Config.FrequencyPenalty > 2.0 {
-		return errors.New("invalid frequency_penalty")
+	if err := c.Config.Validate(); err != nil {
+		return err
 	}
 
 	return nil
@@ -111,6 +116,11 @@ func (c *Chat) AddMessage(msg *Message) error {
 			c.RefreshTokenUsage()
 			break
 		}
+
+		if len(c.Messages) == 0 {
+			return errors.New("message is too long")
+		}
+
 		c.ErasedMessages = append(c.ErasedMessages, c.Messages[0])
 		c.Messages = c.Messages[1:]
 		c.RefreshTokenUsage()

@@ -4,7 +4,7 @@ import "errors"
 
 type Model struct {
 	Name      string `faker:"sentence"`
-	MaxTokens int    `faker:"boundary_start=1, boundary_end=1024"`
+	MaxTokens int    `faker:"boundary_start=1024, boundary_end=1024"`
 }
 
 func NewModel(name string, maxTokens int) (*Model, error) {

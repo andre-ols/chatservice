@@ -131,7 +131,7 @@ func createNewChat(input ChatCompletionInputDTO) (*entity.Chat, error) {
 		return nil, errors.New("error creating new model: " + err.Error())
 	}
 
-	chatConfig := &entity.ChatConfig{
+	chatConfigInput := entity.ChatConfigInput{
 		Temperature:      input.Config.Temperature,
 		TopP:             input.Config.TopP,
 		N:                input.Config.N,
@@ -140,6 +140,12 @@ func createNewChat(input ChatCompletionInputDTO) (*entity.Chat, error) {
 		PresencePenalty:  input.Config.PresencePenalty,
 		FrequencyPenalty: input.Config.FrequencyPenalty,
 		Model:            model,
+	}
+
+	chatConfig, err := entity.NewChatConfig(chatConfigInput)
+
+	if err != nil {
+		return nil, errors.New("error creating new chat config: " + err.Error())
 	}
 
 	tokenCounter := adapter.NewTokenCounter()
