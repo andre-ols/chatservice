@@ -17,18 +17,27 @@ const (
 	Assistant Role = "assistant"
 )
 
-type Message struct {
-	ID        string    `faker:"uuid_digit"`
-	Role      Role      `faker:"oneof: user,system,assistant"`
-	Content   string    `faker:"sentence"`
-	Tokens    int       `faker:"boundary_start=1, boundary_end=1024"`
-	Model     *Model    `faker:"-"`
-	CreatedAt time.Time `faker:"time_now"`
+type TokenCounter interface {
+	CountTokens(model string, text string) (int, error)
 }
 
-func NewMessage(role Role, content string, model *Model) (*Message, error) {
+type Message struct {
+	ID        string       `faker:"uuid_digit"`
+	Role      Role         `faker:"oneof: user,system,assistant"`
+	Content   string       `faker:"sentence"`
+	Tokens    int          `faker:"boundary_start=1, boundary_end=1024"`
+	Model     *Model       `faker:"-"`
+	Tokenizer TokenCounter `faker:"-"`
+	CreatedAt time.Time    `faker:"time_now"`
+}
 
-	totalTokens, err := CountTokens(model.Name, content)
+func NewMessage(role Role, content string, model *Model, tokenizer TokenCounter) (*Message, error) {
+
+	if model == nil {
+		return nil, errors.New("model is nil")
+	}
+
+	totalTokens, err := tokenizer.CountTokens(model.Name, content)
 
 	if err != nil {
 		return nil, err

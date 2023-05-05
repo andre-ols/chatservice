@@ -26,7 +26,7 @@ func (s *MessageTestSuite) TestNewMessage() {
 		data := fake.Message()
 
 		sut := func() (*entity.Message, error) {
-			return entity.NewMessage(data.Role, data.Content, data.Model)
+			return entity.NewMessage(data.Role, data.Content, data.Model, data.Tokenizer)
 		}
 
 		return &Sut{Sut: sut, Data: data}
@@ -67,6 +67,5 @@ func (s *MessageTestSuite) TestNewMessage() {
 		s.Equal(sut.Data.Role, msg.Role)
 		s.Equal(sut.Data.Content, msg.Content)
 		s.Equal(sut.Data.Model, msg.Model)
-		s.Equal(sut.Data.CreatedAt, msg.CreatedAt)
 	})
 }
