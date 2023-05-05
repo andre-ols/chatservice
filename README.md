@@ -3,9 +3,9 @@
    <img src="https://freelogopng.com/images/all_img/1681038628chatgpt-icon-logo.png" alt="ChatGPT" title="ChatGPT" align="right" height="60" />
 </a>
 
-# ChatService microservice
+# ChatService
 
-The ChatService microservice interacts with ChatGPT through the OpenAI API, storing chat message history in MySQL. Communication with the ChatService microservice is done through gRPC (stream), but it can also be done through REST.
+ChatService is a Golang project that provides an interactive chat service based on ChatGPT using Open AI's API. All user conversations are stored and managed in a MySQL database, allowing for easy data analysis and monitoring. The architecture follows clean architecture principles, separating the layers for easy maintenance and evolution. The service can be accessed through HTTP or gRPC (stream), and Docker is used for easy installation and execution.
 
 ## Documentation
 
