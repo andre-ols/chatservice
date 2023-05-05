@@ -2,11 +2,10 @@ package entity
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
+	"github.com/andre-ols/chatservice/internal/domain/port"
 	"github.com/google/uuid"
-	"github.com/pkoukk/tiktoken-go"
 )
 
 type Role string
@@ -17,21 +16,17 @@ const (
 	Assistant Role = "assistant"
 )
 
-type TokenCounter interface {
-	CountTokens(model string, text string) (int, error)
-}
-
 type Message struct {
-	ID        string       `faker:"uuid_digit"`
-	Role      Role         `faker:"oneof: user,system,assistant"`
-	Content   string       `faker:"sentence"`
-	Tokens    int          `faker:"boundary_start=1, boundary_end=1024"`
-	Model     *Model       `faker:"-"`
-	Tokenizer TokenCounter `faker:"-"`
-	CreatedAt time.Time    `faker:"time_now"`
+	ID        string         `faker:"uuid_digit"`
+	Role      Role           `faker:"oneof: user,system,assistant"`
+	Content   string         `faker:"sentence"`
+	Tokens    int            `faker:"boundary_start=1, boundary_end=1024"`
+	Model     *Model         `faker:"-"`
+	Tokenizer port.Tokenizer `faker:"-"`
+	CreatedAt time.Time      `faker:"time_now"`
 }
 
-func NewMessage(role Role, content string, model *Model, tokenizer TokenCounter) (*Message, error) {
+func NewMessage(role Role, content string, model *Model, tokenizer port.Tokenizer) (*Message, error) {
 
 	if model == nil {
 		return nil, errors.New("model is nil")
@@ -78,8 +73,8 @@ func (m *Message) Validate() error {
 		return errors.New("model is nil")
 	}
 
-	if m.Tokens <= 0 {
-		return errors.New("tokens is less than or equal to 0")
+	if m.Tokens < 0 {
+		return errors.New("tokens is less than 0")
 	}
 
 	if m.CreatedAt.IsZero() {
@@ -87,21 +82,4 @@ func (m *Message) Validate() error {
 	}
 
 	return nil
-}
-
-func CountTokens(model string, text string) (int, error) {
-
-	tkm, err := tiktoken.EncodingForModel(model)
-	if err != nil {
-		err = fmt.Errorf("getEncoding: %v", err)
-		return 0, err
-	}
-
-	// encode
-	token := tkm.Encode(text, nil, nil)
-
-	// num_tokens
-	num_tokens := len(token)
-
-	return num_tokens, nil
 }

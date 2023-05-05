@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/andre-ols/chatservice/internal/domain/adapter"
 	"github.com/andre-ols/chatservice/internal/domain/entity"
 	"github.com/andre-ols/chatservice/internal/domain/gateway"
 	"github.com/sashabaranov/go-openai"
@@ -69,7 +70,9 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 		}
 	}
 
-	userMessage, err := entity.NewMessage("user", input.UserMessage, chat.Config.Model)
+	tokenCounter := adapter.NewTokenCounter()
+
+	userMessage, err := entity.NewMessage("user", input.UserMessage, chat.Config.Model, tokenCounter)
 
 	if err != nil {
 		return nil, errors.New("error creating user message: " + err.Error())
@@ -131,7 +134,7 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 		uc.Stream <- r
 	}
 
-	assistant, err := entity.NewMessage("assistant", fullResponse.String(), chat.Config.Model)
+	assistant, err := entity.NewMessage("assistant", fullResponse.String(), chat.Config.Model, tokenCounter)
 
 	if err != nil {
 		return nil, errors.New("error creating assistant message: " + err.Error())
@@ -177,7 +180,9 @@ func (uc *ChatCompletionUseCase) createNewChat(ctx context.Context, input ChatCo
 		FrequencyPenalty: input.Config.FrequencyPenalty,
 	}
 
-	initialSystemMessage, err := entity.NewMessage("system", input.Config.InitialSystemMessage, model)
+	tokenCounter := adapter.NewTokenCounter()
+
+	initialSystemMessage, err := entity.NewMessage("system", input.Config.InitialSystemMessage, model, tokenCounter)
 
 	if err != nil {
 		return nil, errors.New("error creating initial system message: " + err.Error())
