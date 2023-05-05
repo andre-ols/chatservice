@@ -106,7 +106,7 @@ func (c *Chat) AddMessage(msg *Message) error {
 	}
 
 	for {
-		if c.Config.Model.GetMaxTokens() >= msg.GetQuantityTokens()+c.TokenUsage {
+		if c.Config.Model.GetMaxTokens() >= msg.Tokens+c.TokenUsage {
 			c.Messages = append(c.Messages, msg)
 			c.RefreshTokenUsage()
 			break
@@ -134,6 +134,6 @@ func (c *Chat) End() {
 func (c *Chat) RefreshTokenUsage() {
 	c.TokenUsage = 0
 	for i := range c.Messages {
-		c.TokenUsage += c.Messages[i].GetQuantityTokens()
+		c.TokenUsage += c.Messages[i].Tokens
 	}
 }

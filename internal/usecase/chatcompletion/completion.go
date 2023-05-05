@@ -122,7 +122,12 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 }
 
 func createNewChat(input ChatCompletionInputDTO) (*entity.Chat, error) {
-	model := entity.NewModel(input.Config.Model, input.Config.ModelMaxTokens)
+	model, err := entity.NewModel(input.Config.Model, input.Config.ModelMaxTokens)
+
+	if err != nil {
+		return nil, errors.New("error creating new model: " + err.Error())
+	}
+
 	chatConfig := &entity.ChatConfig{
 		Temperature:      input.Config.Temperature,
 		TopP:             input.Config.TopP,

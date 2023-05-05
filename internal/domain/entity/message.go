@@ -3,7 +3,6 @@ package entity
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,12 +18,12 @@ const (
 )
 
 type Message struct {
-	ID        string
-	Role      Role
-	Content   string
-	Tokens    int
-	Model     *Model
-	CreatedAt time.Time
+	ID        string    `faker:"uuid_digit"`
+	Role      Role      `faker:"oneof: user,system,assistant"`
+	Content   string    `faker:"sentence"`
+	Tokens    int       `faker:"boundary_start=1, boundary_end=1024"`
+	Model     *Model    `faker:"-"`
+	CreatedAt time.Time `faker:"time_now"`
 }
 
 func NewMessage(role Role, content string, model *Model) (*Message, error) {
@@ -34,8 +33,6 @@ func NewMessage(role Role, content string, model *Model) (*Message, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println("totalTokens: ", totalTokens)
 
 	msg := &Message{
 		ID:        uuid.New().String(),
@@ -56,6 +53,10 @@ func NewMessage(role Role, content string, model *Model) (*Message, error) {
 
 func (m *Message) Validate() error {
 
+	if m.ID == "" {
+		return errors.New("id is empty")
+	}
+
 	if m.Role != User && m.Role != System && m.Role != Assistant {
 		return errors.New("invalid role")
 	}
@@ -68,15 +69,15 @@ func (m *Message) Validate() error {
 		return errors.New("model is nil")
 	}
 
+	if m.Tokens <= 0 {
+		return errors.New("tokens is less than or equal to 0")
+	}
+
 	if m.CreatedAt.IsZero() {
 		return errors.New("created_at is empty")
 	}
 
 	return nil
-}
-
-func (m *Message) GetQuantityTokens() int {
-	return m.Tokens
 }
 
 func CountTokens(model string, text string) (int, error) {
