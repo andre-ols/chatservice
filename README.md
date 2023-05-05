@@ -41,7 +41,7 @@ sudo apt-get install migrate
 protoc\
 https://grpc.io/docs/protoc-installation/
 
-## 🎲 Running the Application
+## Running the Application
 
 Make a copy of the `env.example` file named `.env` inside the `chatservice` folder. Enter your OpenAI API Key in `OPENAI_API_KEY` inside the `.env` file. You can get an OpenAI API Key [by clicking here](https://platform.openai.com/account/api-keys).
 
@@ -91,7 +91,7 @@ make migrate
 On Windows, use the Ubuntu terminal with WSL 2 to run the commands.\
 For more details, see Full Cycle's [WSL2 + Docker Quick Start](https://github.com/codeedu/wsl2-docker-quickstart).
 
-## 🛠 Technologies Used
+## Technologies
 
 - [Go](https://golang.org/)
 - [Docker](https://www.docker.com/)
