@@ -41,7 +41,7 @@ Make a copy of the `env.example` file named `.env` inside the `chatservice` fold
 ### Clone the project
 
 ```bash
-git clone 
+git clone git@github.com:andre-ols/chatservice.git
 ```
 
 ### Using Docker
