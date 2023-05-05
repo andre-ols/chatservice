@@ -38,13 +38,19 @@ https://grpc.io/docs/protoc-installation/
 
 Make a copy of the `env.example` file named `.env` inside the `chatservice` folder. Enter your OpenAI API Key in `OPENAI_API_KEY` inside the `.env` file. You can get an OpenAI API Key [by clicking here](https://platform.openai.com/account/api-keys).
 
+### Clone the project
+
+```bash
+git clone 
+```
+
 ### Using Docker
 
 ```bash
-cd project/folder/chatservice
+cd chatservice
 docker compose up -d
 docker compose exec chatservice bash 
-go run .\cmd\chatservice\main.go
+go run cmd/chatservice/main.go
 ```
 
 > *If you choose to run the chatservice microservice using Docker, make sure to change the value of DB_HOST to `DB_HOST=mysql` inside your `.env` file*
@@ -52,8 +58,8 @@ go run .\cmd\chatservice\main.go
 ### Running locally
 
 ```bash
-cd project/folder/chatservice
-go run .\cmd\chatservice\main.go
+cd chatservice
+go run cmd/chatservice/main.go
 ```
 
 > *If you choose to run the chatservice microservice locally, make sure to change the value of DB_HOST to `DB_HOST=localhost` inside your `.env` file*
@@ -63,7 +69,7 @@ go run .\cmd\chatservice\main.go
 On the first run it will be necessary to apply the `migrate` to create the tables in the MySQL database, through the `Makefile`.
 
 ```bash
-cd project/folder/chatservice
+cd chatservice
 make migrate
 ```
 
