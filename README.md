@@ -1,6 +1,8 @@
    ![Badge](https://img.shields.io/static/v1?label=Go&message=1.20&color=blue&style=flat&logo=go)
    ![Badge](https://img.shields.io/static/v1?label=Docker&message=23.0.5&color=blue&style=flat&logo=docker)
    ![Badge](https://img.shields.io/static/v1?label=MySQL&message=8&color=blue&style=flat&logo=mysql)
+   ![badge](https://img.shields.io/github/last-commit/andre-ols/chatservice)
+   ![badge](https://img.shields.io/static/v1?label=license&message=MIT&color)
 
 <a href="https://openai.com/blog/chatgpt/">
    <img src="https://freelogopng.com/images/all_img/1681038628chatgpt-icon-logo.png" alt="ChatGPT" title="ChatGPT" align="right" height="60" />
