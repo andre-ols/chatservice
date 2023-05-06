@@ -62,8 +62,6 @@ cp env.example .env
 
 ```bash
 docker compose up -d
-docker compose exec chatservice bash
-go run cmd/chatservice/main.go
 ```
 
 > _If you choose to run the chatservice microservice using Docker, make sure to change the value of DB_HOST to `DB_HOST=mysql` inside your `.env` file_

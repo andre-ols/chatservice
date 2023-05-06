@@ -3,6 +3,7 @@ version: '3'
 services:
   chatservice:
     build: .
+    command: go run cmd/chatservice/main.go
     container_name: chatservice_app
     volumes:
       - .:/go/src
